@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ruang Kita Berdua 💕</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Konfigurasi Kustom Tailwind -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        'brand-cream': '#FFF7F0',
+                        'brand-rose': {
+                            'light': '#FFE4E1',
+                            'DEFAULT': '#FFB6C1',
+                            'dark': '#E06474',
+                        },
+                        'brand-teal': {
+                            'light': '#E0F2F1',
+                            'DEFAULT': '#B2DFDB',
+                            'dark': '#4DB6AC',
+                        },
+                        'brand-text': '#5D4037',
+                    },
+                    keyframes: {
+                        'pop-in': { '0%': { transform: 'scale(0.9)', opacity: '0' }, '100%': { transform: 'scale(1)', opacity: '1' } },
+                        'fade-in': { '0%': { opacity: '0' }, '100%': { opacity: '1' } },
+                        'heartbeat': { '0%': { transform: 'scale(1)' }, '14%': { transform: 'scale(1.1)' }, '28%': { transform: 'scale(1)' }, '42%': { transform: 'scale(1.1)' }, '70%': { transform: 'scale(1)' } }
+                    },
+                    animation: {
+                        'pop-in': 'pop-in 0.5s ease-out forwards',
+                        'fade-in': 'fade-in 0.7s ease-in-out forwards',
+                        'heartbeat': 'heartbeat 1.5s ease-in-out infinite'
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #FFF7F0; }
+        ::-webkit-scrollbar-thumb { background: #FFB6C1; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #E06474; }
+        .masonry-grid { column-gap: 1rem; }
+        @media (min-width: 640px) { .masonry-grid { columns: 2; } }
+        @media (min-width: 1024px) { .masonry-grid { columns: 3; } }
+        .masonry-item { break-inside: avoid; margin-bottom: 1rem; }
+        #loading-overlay { z-index: 100; }
+    </style>
+</head>
+<body class="bg-brand-cream text-brand-text font-sans antialiased">
+
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" class="fixed inset-0 bg-brand-cream bg-opacity-90 flex flex-col items-center justify-center transition-opacity duration-500">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" class="w-16 h-16 text-brand-rose animate-heartbeat mb-4"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+        <p id="loading-text" class="text-brand-rose-dark text-lg font-semibold">Menghubungkan ruang kita...</p>
+    </div>
+
+    <div id="app" class="flex flex-col md:flex-row min-h-screen opacity-0 transition-opacity duration-500">
+        <!-- Sidebar -->
+        <nav id="sidebar" class="bg-brand-rose-light w-full md:w-72 p-4 md:p-6 flex md:flex-col justify-between items-center md:items-stretch shadow-lg">
+            <div>
+                <div class="text-center mb-8">
+                    <h1 class="text-2xl font-bold text-brand-rose-dark">Ruang Kita</h1>
+                    <p class="text-sm text-brand-text">Tempat Rahasia Kita Berdua</p>
+                </div>
+                <ul class="flex flex-row md:flex-col justify-center md:justify-start space-x-2 md:space-x-0 md:space-y-2">
+                    <li><a href="#" class="nav-link active" data-page="dashboard"><span>Dashboard</span></a></li>
+                    <li><a href="#" class="nav-link" data-page="gallery"><span>Galeri Kenangan</span></a></li>
+                    <li><a href="#" class="nav-link" data-page="journal"><span>Jurnal Cinta</span></a></li>
+                    <li><a href="#" class="nav-link" data-page="goals"><span>Impian Kita</span></a></li>
+                </ul>
+            </div>
+            <!-- ID untuk Berbagi -->
+            <div id="share-id-container" class="mt-6 text-center p-3 bg-white rounded-lg shadow-inner hidden">
+                <p class="text-sm font-semibold text-brand-text">Bagikan URL ini ke pasangan:</p>
+                <div class="flex items-center justify-center mt-1">
+                    <input type="text" id="coupleIdDisplay" readonly class="text-xs bg-transparent font-mono text-center text-brand-rose-dark w-full">
+                    <button id="copyIdButton" class="ml-2 p-1 rounded-full hover:bg-brand-rose-light transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                    </button>
+                </div>
+                <p id="copy-feedback" class="text-xs text-green-600 h-4 mt-1"></p>
+            </div>
+        </nav>
+
+        <!-- Konten Utama -->
+        <main class="flex-1 p-4 sm:p-6 md:p-8 overflow-y-auto">
+            <!-- Halaman akan dirender di sini -->
+            <div id="dashboard" class="page"></div>
+            <div id="gallery" class="page hidden"></div>
+            <div id="journal" class="page hidden"></div>
+            <div id="goals" class="page hidden"></div>
+        </main>
+    </div>
+
+    <!-- Modal untuk menampilkan gambar -->
+    <div id="imageModal" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 z-50 hidden">
+        <div class="bg-white p-4 rounded-lg max-w-3xl max-h-[90vh] relative">
+            <button onclick="closeImageModal()" class="absolute -top-3 -right-3 bg-white text-brand-rose-dark rounded-full w-8 h-8 flex items-center justify-center text-2xl font-bold">&times;</button>
+            <img id="modalImage" src="" alt="Kenangan diperbesar" class="rounded-md max-w-full max-h-[85vh]">
+        </div>
+    </div>
+    
+    <!-- Modal untuk input tanggal jadian -->
+    <div id="date-modal" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 z-50 hidden">
+        <div class="bg-white p-8 rounded-2xl shadow-xl text-center">
+            <h2 class="text-xl font-bold text-brand-rose-dark mb-4">Kapan petualangan kalian dimulai?</h2>
+            <p class="text-sm text-brand-text mb-4">Masukkan tanggal jadian kalian untuk memulai.</p>
+            <input type="date" id="startDateInput" class="p-2 border border-brand-teal-DEFAULT rounded-lg w-full mb-4">
+            <button id="saveStartDateButton" class="w-full bg-brand-rose hover:bg-brand-rose-dark text-white font-bold py-2 px-4 rounded-full transition-colors">Simpan Tanggal</button>
+        </div>
+    </div>
+
+    <!-- [FIX] Modal untuk Setup Ruang Baru -->
+    <div id="setup-new-room-modal" class="fixed inset-0 bg-brand-cream flex items-center justify-center p-4 z-50 hidden">
+        <div class="bg-white p-8 rounded-2xl shadow-xl text-center max-w-lg">
+            <h2 class="text-2xl font-bold text-brand-rose-dark mb-4">Selamat Datang di Ruang Baru Kalian!</h2>
+            <p class="text-brand-text mb-6">
+                Sebuah ruang pribadi yang aman telah dibuat untuk Anda dan pasangan. Untuk menyimpan dan berbagi ruang ini, silakan gunakan tautan unik di bawah ini.
+            </p>
+            <p class="text-sm text-brand-text mb-2 font-semibold">Simpan dan gunakan tautan ini:</p>
+            <div class="bg-brand-teal-light p-4 rounded-lg">
+                <a id="new-room-link" href="#" class="text-brand-rose-dark font-mono break-all" target="_self"></a>
+            </div>
+            <p class="text-xs text-gray-500 mt-4">Klik tautan di atas untuk masuk ke ruang baru Anda. Jangan lupa untuk mem-bookmarknya!</p>
+        </div>
+    </div>
+    
+    <!-- Firebase SDK -->
+    <script type="module">
+        // Import fungsi yang diperlukan dari Firebase SDK
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, getDoc, setDoc, addDoc, updateDoc, onSnapshot, collection, query, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // --- KONFIGURASI & INISIALISASI FIREBASE ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyCNR_VsW0yY42wHYr5XKdO0a8on9G2EEQo",
+            authDomain: "farhan-dan-yuli.firebaseapp.com",
+            projectId: "farhan-dan-yuli",
+            storageBucket: "farhan-dan-yuli.firebasestorage.app",
+            messagingSenderId: "384253176952",
+            appId: "1:384253176952:web:b9bab5f5367680512c518d",
+            measurementId: "G-Q7ZSNZ2WF2"
+          };
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // --- VARIABEL GLOBAL & ELEMENT UI ---
+        const pages = document.querySelectorAll('.page');
+        const navLinks = document.querySelectorAll('.nav-link');
+        let coupleId = null;
+        let coupleDocRef = null;
+        let unsubscribeJournal = null;
+        let unsubscribeGoals = null;
+
+        // --- FUNGSI UTAMA & ALUR APLIKASI ---
+        async function main() {
+            await authenticateUser();
+            const isReady = setupCoupleId();
+            if (isReady && coupleId) {
+                coupleDocRef = doc(db, 'couples', coupleId);
+                await checkAndSetupCoupleData();
+                setupUI();
+                setupRealtimeListeners();
+            }
+        }
+        
+        async function authenticateUser() {
+            try {
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    await signInWithCustomToken(auth, __initial_auth_token);
+                } else {
+                    await signInAnonymously(auth);
+                }
+                console.log("Authentication successful. User UID:", auth.currentUser.uid);
+            } catch (error) {
+                console.error("Authentication failed:", error);
+                document.getElementById('loading-text').textContent = 'Gagal terhubung. Coba muat ulang halaman.';
+            }
+        }
+
+        // [FIX] Mengembalikan logika modal untuk pengguna baru
+        function setupCoupleId() {
+            const urlParams = new URLSearchParams(window.location.search);
+            let idFromUrl = urlParams.get('id');
+
+            if (idFromUrl) {
+                coupleId = idFromUrl;
+                document.getElementById('coupleIdDisplay').value = window.location.href;
+                document.getElementById('share-id-container').classList.remove('hidden');
+                return true; // Siap untuk melanjutkan
+            } else {
+                // Pengguna baru: tampilkan modal, jangan reload.
+                const newId = doc(collection(db, 'temp')).id;
+                const baseUrl = window.location.href.split('?')[0];
+                const newUrl = `${baseUrl}?id=${newId}`;
+
+                // Sembunyikan overlay loading
+                document.getElementById('loading-overlay').classList.add('opacity-0', 'pointer-events-none');
+                
+                // Tampilkan modal setup
+                const setupContainer = document.getElementById('setup-new-room-modal');
+                const newLinkElement = document.getElementById('new-room-link');
+                
+                if(newLinkElement){
+                    newLinkElement.href = newUrl;
+                    newLinkElement.textContent = newUrl;
+                }
+                if(setupContainer){
+                    setupContainer.classList.remove('hidden');
+                }
+
+                return false; // Hentikan eksekusi skrip saat ini
+            }
+        }
+        
+        async function checkAndSetupCoupleData() {
+            const docSnap = await getDoc(coupleDocRef);
+            if (!docSnap.exists() || !docSnap.data().startDate) {
+                document.getElementById('date-modal').classList.remove('hidden');
+            }
+        }
+
+        function setupUI() {
+            document.getElementById('loading-overlay').classList.add('opacity-0', 'pointer-events-none');
+            document.getElementById('app').classList.remove('opacity-0');
+            setupNavLinks();
+            setupCopyButton();
+        }
+
+        function setupRealtimeListeners() {
+            onSnapshot(coupleDocRef, (doc) => {
+                if (doc.exists() && doc.data().startDate) {
+                    renderDashboard(doc.data().startDate.toDate());
+                }
+            });
+
+            const journalCol = collection(coupleDocRef, "journalEntries");
+            const qJournal = query(journalCol);
+            unsubscribeJournal = onSnapshot(qJournal, (snapshot) => {
+                const entries = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                if (entries.length > 0 && entries[0].createdAt) {
+                    entries.sort((a, b) => b.createdAt.toMillis() - a.createdAt.toMillis());
+                }
+                renderJournalPage(entries);
+            });
+            
+            const goalsCol = collection(coupleDocRef, "coupleGoals");
+            const qGoals = query(goalsCol);
+            unsubscribeGoals = onSnapshot(qGoals, (snapshot) => {
+                const goals = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                if (goals.length > 0 && goals[0].createdAt) {
+                    goals.sort((a,b) => a.createdAt.toMillis() - b.createdAt.toMillis());
+                }
+                renderGoalsPage(goals);
+            });
+            
+            renderGalleryPage();
+        }
+
+        // --- FUNGSI RENDER HALAMAN ---
+        function renderDashboard(startDate) {
+            const now = new Date();
+            const diffTime = Math.abs(now - startDate);
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            document.getElementById('dashboard').innerHTML = `
+                <h2 class="text-3xl font-bold text-brand-rose-dark mb-6">Selamat Datang, Sayang!</h2>
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div class="lg:col-span-1 bg-white p-6 rounded-2xl shadow-md flex flex-col items-center justify-center text-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" class="w-12 h-12 text-brand-rose animate-heartbeat mb-4"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+                        <h3 class="text-lg font-semibold text-brand-text mb-2">Kita Telah Bersama Selama</h3>
+                        <p class="text-4xl font-bold text-brand-rose-dark">${diffDays}</p>
+                        <p class="text-sm text-gray-500 mt-1">hari yang indah!</p>
+                    </div>
+                    <div class="lg:col-span-2 bg-white p-6 rounded-2xl shadow-md">
+                        <h3 class="text-xl font-bold text-brand-rose-dark mb-4">Kenangan Terbaru</h3>
+                        <div class="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                            <img src="https://placehold.co/400x400/FFE4E1/5D4037?text=Kencan+Pertama" onclick="showImageModal(this.src)" class="rounded-lg w-full h-full object-cover cursor-pointer hover:scale-105 transition-transform">
+                            <img src="https://placehold.co/400x400/E0F2F1/5D4037?text=Liburan" onclick="showImageModal(this.src)" class="rounded-lg w-full h-full object-cover cursor-pointer hover:scale-105 transition-transform">
+                            <img src="https://placehold.co/400x400/FFB6C1/5D4037?text=Ulang+Tahun" onclick="showImageModal(this.src)" class="rounded-lg w-full h-full object-cover cursor-pointer hover:scale-105 transition-transform">
+                        </div>
+                    </div>
+                </div>`;
+        }
+        
+        function renderJournalPage(entries = []) {
+            const container = document.getElementById('journal');
+            container.innerHTML = `
+                <h2 class="text-3xl font-bold text-brand-rose-dark mb-6">Jurnal Cinta Kita</h2>
+                <div class="bg-white p-6 rounded-2xl shadow-md mb-6">
+                    <h3 class="text-xl font-bold text-brand-rose-dark mb-4">Tulis Cerita Baru...</h3>
+                    <textarea id="journalInput" class="w-full p-3 border border-brand-teal-DEFAULT rounded-lg focus:ring-2 focus:ring-brand-rose-dark" rows="4" placeholder="Apa yang kamu rasakan hari ini, sayang?"></textarea>
+                    <button id="saveJournalButton" class="mt-4 bg-brand-rose hover:bg-brand-rose-dark text-white font-bold py-2 px-4 rounded-full transition-colors">Simpan Cerita</button>
+                </div>
+                <div id="journalEntries" class="space-y-4"></div>
+            `;
+            
+            const entriesContainer = container.querySelector('#journalEntries');
+            if (entries.length === 0) {
+                entriesContainer.innerHTML = `<p class="text-center text-gray-500">Belum ada cerita. Yuk, mulai tulis kenangan pertama kita!</p>`;
+            } else {
+                entriesContainer.innerHTML = entries.map(entry => `
+                    <div class="bg-white p-5 rounded-xl shadow-sm border-l-4 border-brand-teal-dark">
+                        <p class="italic text-gray-700">"${entry.text}"</p>
+                        <p class="text-right text-sm text-gray-500 mt-2">- ${entry.createdAt ? entry.createdAt.toDate().toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long' }) : 'Baru saja'}</p>
+                    </div>
+                `).join('');
+            }
+
+            container.querySelector('#saveJournalButton').addEventListener('click', async () => {
+                const input = container.querySelector('#journalInput');
+                const text = input.value.trim();
+                if (text) {
+                    input.disabled = true;
+                    await addDoc(collection(coupleDocRef, "journalEntries"), {
+                        text: text,
+                        createdAt: serverTimestamp()
+                    });
+                    input.value = '';
+                    input.disabled = false;
+                }
+            });
+        }
+        
+        function renderGoalsPage(goals = []) {
+            const container = document.getElementById('goals');
+            container.innerHTML = `
+                <h2 class="text-3xl font-bold text-brand-rose-dark mb-6">Daftar Impian Kita Bersama</h2>
+                <div class="bg-white p-6 rounded-2xl shadow-md">
+                    <div id="goalsList" class="space-y-3"></div>
+                    <div class="mt-6 flex gap-4">
+                        <input type="text" id="goalInput" class="flex-grow p-3 border border-brand-teal-DEFAULT rounded-lg" placeholder="Tulis impian baru...">
+                        <button id="addGoalButton" class="bg-brand-rose hover:bg-brand-rose-dark text-white font-bold py-2 px-4 rounded-full">Tambah</button>
+                    </div>
+                </div>
+            `;
+            
+            const listContainer = container.querySelector('#goalsList');
+            if (goals.length === 0) {
+                listContainer.innerHTML = `<p class="text-center text-gray-500">Ayo kita buat daftar impian pertama kita!</p>`;
+            } else {
+                listContainer.innerHTML = goals.map(goal => `
+                    <div class="flex items-center p-3 rounded-lg ${goal.done ? 'bg-brand-teal-light' : ''}">
+                        <input type="checkbox" ${goal.done ? 'checked' : ''} class="h-5 w-5 rounded border-gray-300 text-brand-rose cursor-pointer" onchange="toggleGoal('${goal.id}', ${!goal.done})">
+                        <label class="ml-3 text-brand-text flex-grow ${goal.done ? 'line-through text-gray-400' : ''}">${goal.text}</label>
+                    </div>
+                `).join('');
+            }
+            
+            container.querySelector('#addGoalButton').addEventListener('click', async () => {
+                const input = container.querySelector('#goalInput');
+                const text = input.value.trim();
+                if (text) {
+                    input.disabled = true;
+                    await addDoc(collection(coupleDocRef, "coupleGoals"), {
+                        text: text,
+                        done: false,
+                        createdAt: serverTimestamp()
+                    });
+                    input.value = '';
+                    input.disabled = false;
+                }
+            });
+        }
+
+        function renderGalleryPage() {
+            document.getElementById('gallery').innerHTML = `
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-3xl font-bold text-brand-rose-dark">Galeri Kenangan Kita</h2>
+                    <button class="bg-brand-rose/50 text-white font-bold py-2 px-4 rounded-full cursor-not-allowed">Unggah (Segera Hadir)</button>
+                </div>
+                <p class="text-center text-gray-500 mb-4">Fitur unggah foto sedang dalam pengembangan. Untuk saat ini, nikmati beberapa momen imajiner kita!</p>
+                <div class="masonry-grid">
+                    <div class="masonry-item bg-white rounded-lg p-3 shadow-md cursor-pointer" onclick="showImageModal('https://placehold.co/600x800/FFE4E1/5D4037?text=Di+Pantai')">
+                        <img src="https://placehold.co/600x800/FFE4E1/5D4037?text=Di+Pantai" class="rounded-md w-full">
+                        <p class="text-sm mt-2 p-1">Momen sunset terbaik. 🌅</p>
+                    </div>
+                    <div class="masonry-item bg-white rounded-lg p-3 shadow-md cursor-pointer" onclick="showImageModal('https://placehold.co/600x600/E0F2F1/5D4037?text=Masak+Bareng')">
+                        <img src="https://placehold.co/600x600/E0F2F1/5D4037?text=Masak+Bareng" class="rounded-md w-full">
+                        <p class="text-sm mt-2 p-1">Walaupun dapurnya berantakan, tapi seru! 😂</p>
+                    </div>
+                </div>
+            `;
+        }
+
+        // --- FUNGSI PEMBANTU & EVENT LISTENERS ---
+        window.toggleGoal = async (id, newStatus) => {
+            const goalDocRef = doc(db, `couples/${coupleId}/coupleGoals`, id);
+            await updateDoc(goalDocRef, { done: newStatus });
+        };
+
+        function setupNavLinks() {
+            navLinks.forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const pageId = link.dataset.page;
+                    pages.forEach(page => page.classList.add('hidden'));
+                    document.getElementById(pageId).classList.remove('hidden');
+                    navLinks.forEach(nav => nav.classList.remove('active'));
+                    link.classList.add('active');
+                });
+            });
+        }
+
+        // [FIX] Menggunakan metode copy yang lebih andal untuk iframe
+        function setupCopyButton() {
+            document.getElementById('copyIdButton').addEventListener('click', () => {
+                const idInput = document.getElementById('coupleIdDisplay');
+                idInput.select();
+                idInput.setSelectionRange(0, 99999); // Untuk perangkat mobile
+
+                try {
+                    document.execCommand('copy');
+                    const feedback = document.getElementById('copy-feedback');
+                    feedback.textContent = 'URL disalin!';
+                    setTimeout(() => { feedback.textContent = ''; }, 2000);
+                } catch (err) {
+                    console.error('Gagal menyalin URL: ', err);
+                    alert('Gagal menyalin URL. Silakan salin secara manual.');
+                }
+            });
+        }
+        
+        document.getElementById('saveStartDateButton').addEventListener('click', async () => {
+            const dateInput = document.getElementById('startDateInput').value;
+            if (dateInput) {
+                await setDoc(coupleDocRef, { startDate: new Date(dateInput) });
+                document.getElementById('date-modal').classList.add('hidden');
+            } else {
+                alert("Harap pilih tanggal terlebih dahulu.");
+            }
+        });
+
+        window.showImageModal = (src) => {
+            document.getElementById('modalImage').src = src;
+            document.getElementById('imageModal').classList.remove('hidden');
+        };
+
+        window.closeImageModal = () => {
+            document.getElementById('imageModal').classList.add('hidden');
+        };
+
+        // --- MULAI APLIKASI ---
+        main();
+
+    </script>
+    <style>
+        .nav-link { display: flex; align-items: center; padding: 0.75rem 1rem; border-radius: 9999px; font-weight: 500; color: #5D4037; transition: all 0.3s ease; }
+        .nav-link:hover { background-color: rgba(255, 255, 255, 0.5); color: #E06474; }
+        .nav-link.active { background-color: white; color: #E06474; font-weight: 700; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); }
+    </style>
+</body>
+</html>
